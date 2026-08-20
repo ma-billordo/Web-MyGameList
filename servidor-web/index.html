@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyGameList - Biblioteca de Steam</title>
+    <style>
+        :root {
+            --bg-color: #1b2838;
+            --card-bg: #2a475e;
+            --text-color: #c7d5e0;
+            --accent-color: #66c0f4;
+            --success-color: #4caf50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--card-bg);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .form-section {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input, select, button {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #101822;
+            background-color: #101822;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        input { flex: 1; min-width: 200px; }
+
+        button {
+            background-color: var(--accent-color);
+            color: #1b2838;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover { background-color: #a4d7f5; }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .game-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .game-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            background-color: #101822;
+            width: fit-content;
+        }
+
+        .status-jugando { color: #ffb74d; }
+        .status-por-jugar { color: #90caf9; }
+        .status-completado { color: #81c784; }
+        .status-platinado { color: #e040fb; border: 1px solid #e040fb; }
+
+        .stars {
+            color: #ffd700;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .star { cursor: pointer; }
+        .star.inactive { color: #445; }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .actions select { padding: 5px; font-size: 12px; }
+        .btn-delete { background-color: #e57373; color: #fff; padding: 5px 10px; font-size: 12px; }
+        .btn-delete:hover { background-color: #ef5350; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎮 MyGameList</h1>
+        <p>Administrá tu biblioteca de Steam, estados y clasificaciones</p>
+    </header>
+
+    <div class="container">
+        <!-- Formulario para agregar juegos -->
+        <div class="form-section">
+            <input type="text" id="gameTitle" placeholder="Nombre del juego de Steam..." required>
+            <select id="gameStatus">
+                <option value="Por jugar">Por jugar</option>
+                <option value="Jugando">Jugando</option>
+                <option value="Completado">Completado</option>
+                <option value="Platinado">Platinado</option>
+            </select>
+            <select id="gameRating">
+                <option value="1">⭐</option>
+                <option value="2">⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐</option>
+                <option value="5">⭐⭐⭐⭐⭐</option>
+            </select>
+            <button onclick="addGame()">Agregar a la Lista</button>
+        </div>
+
+        <!-- Grilla de juegos -->
+        <div class="game-grid" id="gameGrid">
+            <!-- Ejemplo de juego inicial -->
+            <div class="game-card" data-id="1">
+                <div>
+                    <div class="game-title">Counter-Strike 2</div>
+                    <span class="game-status status-jugando">Jugando</span>
+                    <div class="stars">⭐⭐⭐⭐<span class="star inactive">★</span></div>
+                </div>
+                <div class="actions">
+                    <select onchange="updateStatus(1, this.value)">
+                        <option value="Jugando" selected>Jugando</option>
+                        <option value="Por jugar">Por jugar</option>
+                        <option value="Completado">Completado</option>
+                        <option value="Platinado">Platinado</option>
+                    </select>
+                    <button class="btn-delete" onclick="deleteGame(1)">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Array para almacenar los juegos en memoria
+        let games = [
+            { id: 1, title: "Counter-Strike 2", status: "Jugando", rating: 4 }
+        ];
+
+        function renderGames() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+
+            games.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                
+                // Formatear la clase del estado para el color
+                const statusClass = 'status-' + game.status.toLowerCase().replace(' ', '-');
+                
+                // Generar estrellas visuales
+                let starsHTML = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= game.rating) {
+                        starsHTML += '<span class="star" onclick="updateRating(' + game.id + ', ' + i + ')">★</span>';
+                    } else {
+                        starsHTML += '<span class="star inactive" onclick="updateRating(' + game.id + ', ' + i + ')">★</span>';
+                    }
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="game-title">${game.title}</div>
+                        <span class="game-status ${statusClass}">${game.status}</span>
+                        <div class="stars">${starsHTML}</div>
+                    </div>
+                    <div class="actions">
+                        <select onchange="updateStatus(${game.id}, this.value)">
+                            <option value="Por jugar" ${game.status === 'Por jugar' ? 'selected' : ''}>Por jugar</option>
+                            <option value="Jugando" ${game.status === 'Jugando' ? 'selected' : ''}>Jugando</option>
+                            <option value="Completado" ${game.status === 'Completado' ? 'selected' : ''}>Completado</option>
+                            <option value="Platinado" ${game.status === 'Platinado' ? 'selected' : ''}>Platinado</option>
+                        </select>
+                        <button class="btn-delete" onclick="deleteGame(${game.id})">Eliminar</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function addGame() {
+            const titleInput = document.getElementById('gameTitle');
+            const statusInput = document.getElementById('gameStatus');
+            const ratingInput = document.getElementById('gameRating');
+
+            if (titleInput.value.trim() === '') {
+                alert('Por favor, ingresá el nombre de un juego.');
+                return;
+            }
+
+            const newGame = {
+                id: Date.now(),
+                title: titleInput.value,
+                status: statusInput.value,
+                rating: parseInt(ratingInput.value)
+            };
+
+            games.push(newGame);
+            titleInput.value = '';
+            renderGames();
+        }
+
+        function updateStatus(id, newStatus) {
+            const game = games.find(g => g.id === id);
+            if (game) {
+                game.status = newStatus;
+                renderGames();
+            }
+        }
+
+        function updateRating(id, newRating) {
+            const game = games.find(g => g.id === id);
+            if (game) {
+                game.rating = newRating;
+                renderGames();
+            }
+        }
+
+        function deleteGame(id) {
+            games = games.filter(g => g.id !== id);
+            renderGames();
+        }
+    </script>
+</body>
+</html>
