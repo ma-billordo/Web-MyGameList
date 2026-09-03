@@ -9,7 +9,6 @@ import (
 
 func main() {
 	http.HandleFunc("/", serveForm)
-	http.HandleFunc("/about.html", handleAbout)
 
 	port := ":8080"
 	fmt.Printf("Servidor escuchando en http://localhost%s\n", port)
@@ -34,14 +33,3 @@ func serveForm(w http.ResponseWriter, r *http.Request) {
 
 	http.ServeFile(w, r, "index.html")
 }
-
-func handleAbout(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	http.ServeFile(w, r, "about.html")
-}
-
-////Funciones////
