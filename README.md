@@ -16,7 +16,7 @@ El esquema de la base de datos (PostgreSQL) está compuesto por tres tablas:
 
 El esquema completo se encuentra en `db/schema/schema.sql`, y las consultas SQL utilizadas para generar el código de acceso a datos están en `db/queries/queries.sql`.
 ### Modelo relacional
-<img src="diagrama.png" alt="Texto alternativo">
+![diagrama](diagrama.png)
 ## Requisitos
 
 * Si no está instalado, usar el siguiente comando para instalar docker-compose: `sudo apt install docker-compose-v2`
