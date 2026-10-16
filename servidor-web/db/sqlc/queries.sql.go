@@ -271,7 +271,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 	return items, nil
 }
 
-const updateGame = `-- name: UpdateGame :exec
+const updateGame = `-- name: UpdateGame :execrows
 UPDATE Library
 SET title = $2, description =$3
 WHERE id_game = $1
@@ -283,12 +283,15 @@ type UpdateGameParams struct {
 	Description string `json:"description"`
 }
 
-func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) error {
-	_, err := q.db.ExecContext(ctx, updateGame, arg.IDGame, arg.Title, arg.Description)
-	return err
+func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateGame, arg.IDGame, arg.Title, arg.Description)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
-const updateRecord = `-- name: UpdateRecord :exec
+const updateRecord = `-- name: UpdateRecord :execrows
 UPDATE Catalogue
 SET score = $3, status =$4
 WHERE id_user = $1 AND id_game = $2
@@ -301,17 +304,20 @@ type UpdateRecordParams struct {
 	Status string        `json:"status"`
 }
 
-func (q *Queries) UpdateRecord(ctx context.Context, arg UpdateRecordParams) error {
-	_, err := q.db.ExecContext(ctx, updateRecord,
+func (q *Queries) UpdateRecord(ctx context.Context, arg UpdateRecordParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateRecord,
 		arg.IDUser,
 		arg.IDGame,
 		arg.Score,
 		arg.Status,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updateUser = `-- name: UpdateUser :execrows
 UPDATE Users
 SET name = $2, email =$3
 WHERE id_user = $1
@@ -323,7 +329,10 @@ type UpdateUserParams struct {
 	Email  string `json:"email"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.ExecContext(ctx, updateUser, arg.IDUser, arg.Name, arg.Email)
-	return err
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateUser, arg.IDUser, arg.Name, arg.Email)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

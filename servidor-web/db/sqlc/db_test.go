@@ -74,12 +74,12 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("UpdateUser", func(t *testing.T) {
-		err := queries.UpdateUser(ctx, UpdateUserParams{
+		result, err := queries.UpdateUser(ctx, UpdateUserParams{
 			IDUser: userID,
 			Name:   "valen",
 			Email:  "valen@gmail.com",
 		})
-		if err != nil {
+		if err != nil || result == 0 {
 			t.Fatalf("Error al actualizar usuario: %v\n", err)
 		}
 		// Leer actualizado
@@ -154,12 +154,12 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("UpdateGame", func(t *testing.T) {
-		err := queries.UpdateGame(ctx, UpdateGameParams{
+		result, err := queries.UpdateGame(ctx, UpdateGameParams{
 			IDGame:      gameID,
 			Title:       "PAYDAY 2",
 			Description: "FPS, Cooperativo Online",
 		})
-		if err != nil {
+		if err != nil || result == 0 {
 			t.Fatalf("Error al actualizar juego: %v\n", err)
 		}
 		// Leer actualizado
@@ -234,13 +234,13 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("UpdateRecord", func(t *testing.T) {
-		err := queries.UpdateRecord(ctx, UpdateRecordParams{
+		result, err := queries.UpdateRecord(ctx, UpdateRecordParams{
 			IDUser: userID,
 			IDGame: gameID,
 			Score:  sql.NullInt32{Int32: 4, Valid: true},
 			Status: "Platinado",
 		})
-		if err != nil {
+		if err != nil || result == 0 {
 			t.Fatalf("Error al actualizar record: %v\n", err)
 		}
 		// Leer actualizado

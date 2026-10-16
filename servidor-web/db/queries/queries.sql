@@ -14,7 +14,7 @@ SELECT id_user, name, email
 FROM Users
 ORDER BY id_user;
 
--- name: UpdateUser :exec
+-- name: UpdateUser :execrows
 UPDATE Users
 SET name = $2, email =$3
 WHERE id_user = $1;
@@ -39,7 +39,7 @@ SELECT id_game, title, description, avg_score
 FROM Library
 ORDER BY id_game;
 
--- name: UpdateGame :exec
+-- name: UpdateGame :execrows
 UPDATE Library
 SET title = $2, description =$3
 WHERE id_game = $1;
@@ -64,7 +64,7 @@ FROM Catalogue
 WHERE id_user = $1
 ORDER BY (id_user, id_game);
 
--- name: UpdateRecord :exec
+-- name: UpdateRecord :execrows
 UPDATE Catalogue
 SET score = $3, status =$4
 WHERE id_user = $1 AND id_game = $2;
