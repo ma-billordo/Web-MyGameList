@@ -44,6 +44,7 @@ ALTER TABLE Catalogue ADD CONSTRAINT Catalogue_Library
 ALTER TABLE Catalogue ADD CONSTRAINT Catalogue_Users
     FOREIGN KEY (id_user)
     REFERENCES Users (id_user)
+    ON DELETE CASCADE
     NOT DEFERRABLE 
     INITIALLY IMMEDIATE
 ;

@@ -19,7 +19,7 @@ UPDATE Users
 SET name = $2, email =$3
 WHERE id_user = $1;
 
--- name: DeleteUser :exec
+-- name: DeleteUser :execrows
 DELETE FROM Users
 WHERE id_user = $1;
 
@@ -44,7 +44,7 @@ UPDATE Library
 SET title = $2, description =$3
 WHERE id_game = $1;
 
--- name: DeleteGame :exec
+-- name: DeleteGame :execrows
 DELETE FROM Library
 WHERE id_game = $1;
 
@@ -69,6 +69,6 @@ UPDATE Catalogue
 SET score = $3, status =$4
 WHERE id_user = $1 AND id_game = $2;
 
--- name: DeleteRecord :exec
+-- name: DeleteRecord :execrows
 DELETE FROM Catalogue
 WHERE id_user = $1 AND id_game = $2;

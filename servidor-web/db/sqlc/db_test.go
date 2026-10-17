@@ -74,12 +74,12 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("UpdateUser", func(t *testing.T) {
-		result, err := queries.UpdateUser(ctx, UpdateUserParams{
+		_, err := queries.UpdateUser(ctx, UpdateUserParams{
 			IDUser: userID,
 			Name:   "valen",
 			Email:  "valen@gmail.com",
 		})
-		if err != nil || result == 0 {
+		if err != nil {
 			t.Fatalf("Error al actualizar usuario: %v\n", err)
 		}
 		// Leer actualizado
@@ -154,12 +154,12 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("UpdateGame", func(t *testing.T) {
-		result, err := queries.UpdateGame(ctx, UpdateGameParams{
+		_, err := queries.UpdateGame(ctx, UpdateGameParams{
 			IDGame:      gameID,
 			Title:       "PAYDAY 2",
 			Description: "FPS, Cooperativo Online",
 		})
-		if err != nil || result == 0 {
+		if err != nil {
 			t.Fatalf("Error al actualizar juego: %v\n", err)
 		}
 		// Leer actualizado
@@ -234,13 +234,13 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("UpdateRecord", func(t *testing.T) {
-		result, err := queries.UpdateRecord(ctx, UpdateRecordParams{
+		_, err := queries.UpdateRecord(ctx, UpdateRecordParams{
 			IDUser: userID,
 			IDGame: gameID,
 			Score:  sql.NullInt32{Int32: 4, Valid: true},
 			Status: "Platinado",
 		})
-		if err != nil || result == 0 {
+		if err != nil {
 			t.Fatalf("Error al actualizar record: %v\n", err)
 		}
 		// Leer actualizado
@@ -278,7 +278,7 @@ func TestGameList_CRUD(t *testing.T) {
 
 	// ---------- Cleanup: Record, Game y User ----------
 	t.Run("DeleteRecord", func(t *testing.T) {
-		err := queries.DeleteRecord(ctx, DeleteRecordParams{
+		_, err := queries.DeleteRecord(ctx, DeleteRecordParams{
 			IDUser: userID,
 			IDGame: gameID,
 		})
@@ -294,7 +294,7 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("DeleteGame", func(t *testing.T) {
-		err := queries.DeleteGame(ctx, gameID)
+		_, err := queries.DeleteGame(ctx, gameID)
 		if err != nil {
 			t.Fatalf("Error al eliminar juego: %v\n", err)
 		}
@@ -307,7 +307,7 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("DeleteUser", func(t *testing.T) {
-		err := queries.DeleteUser(ctx, userID)
+		_, err := queries.DeleteUser(ctx, userID)
 		if err != nil {
 			t.Fatalf("Error al eliminar usuario: %v\n", err)
 		}

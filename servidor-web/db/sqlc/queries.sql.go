@@ -72,17 +72,20 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int32, 
 	return id_user, err
 }
 
-const deleteGame = `-- name: DeleteGame :exec
+const deleteGame = `-- name: DeleteGame :execrows
 DELETE FROM Library
 WHERE id_game = $1
 `
 
-func (q *Queries) DeleteGame(ctx context.Context, idGame int32) error {
-	_, err := q.db.ExecContext(ctx, deleteGame, idGame)
-	return err
+func (q *Queries) DeleteGame(ctx context.Context, idGame int32) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteGame, idGame)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
-const deleteRecord = `-- name: DeleteRecord :exec
+const deleteRecord = `-- name: DeleteRecord :execrows
 DELETE FROM Catalogue
 WHERE id_user = $1 AND id_game = $2
 `
@@ -92,19 +95,25 @@ type DeleteRecordParams struct {
 	IDGame int32 `json:"id_game"`
 }
 
-func (q *Queries) DeleteRecord(ctx context.Context, arg DeleteRecordParams) error {
-	_, err := q.db.ExecContext(ctx, deleteRecord, arg.IDUser, arg.IDGame)
-	return err
+func (q *Queries) DeleteRecord(ctx context.Context, arg DeleteRecordParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteRecord, arg.IDUser, arg.IDGame)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
-const deleteUser = `-- name: DeleteUser :exec
+const deleteUser = `-- name: DeleteUser :execrows
 DELETE FROM Users
 WHERE id_user = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, idUser int32) error {
-	_, err := q.db.ExecContext(ctx, deleteUser, idUser)
-	return err
+func (q *Queries) DeleteUser(ctx context.Context, idUser int32) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteUser, idUser)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const getGame = `-- name: GetGame :one
