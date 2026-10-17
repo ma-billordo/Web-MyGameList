@@ -176,41 +176,6 @@ func (q *Queries) GetUser(ctx context.Context, idUser int32) (GetUserRow, error)
 	return i, err
 }
 
-const lisRecord = `-- name: LisRecord :many
-SELECT id_user, id_game, score, status
-FROM Catalogue
-WHERE id_user = $1
-ORDER BY (id_user, id_game)
-`
-
-func (q *Queries) LisRecord(ctx context.Context, idUser int32) ([]Catalogue, error) {
-	rows, err := q.db.QueryContext(ctx, lisRecord, idUser)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Catalogue
-	for rows.Next() {
-		var i Catalogue
-		if err := rows.Scan(
-			&i.IDUser,
-			&i.IDGame,
-			&i.Score,
-			&i.Status,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listGames = `-- name: ListGames :many
 SELECT id_game, title, description, avg_score
 FROM Library
@@ -231,6 +196,41 @@ func (q *Queries) ListGames(ctx context.Context) ([]Library, error) {
 			&i.Title,
 			&i.Description,
 			&i.AvgScore,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRecord = `-- name: ListRecord :many
+SELECT id_user, id_game, score, status
+FROM Catalogue
+WHERE id_user = $1
+ORDER BY (id_user, id_game)
+`
+
+func (q *Queries) ListRecord(ctx context.Context, idUser int32) ([]Catalogue, error) {
+	rows, err := q.db.QueryContext(ctx, listRecord, idUser)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Catalogue
+	for rows.Next() {
+		var i Catalogue
+		if err := rows.Scan(
+			&i.IDUser,
+			&i.IDGame,
+			&i.Score,
+			&i.Status,
 		); err != nil {
 			return nil, err
 		}

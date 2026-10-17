@@ -58,7 +58,7 @@ SELECT id_user, id_game, score, status
 FROM Catalogue
 WHERE id_user = $1 AND id_game = $2;
 
--- name: LisRecord :many
+-- name: ListRecord :many
 SELECT id_user, id_game, score, status
 FROM Catalogue
 WHERE id_user = $1

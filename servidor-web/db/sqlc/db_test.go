@@ -258,7 +258,7 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("ListRecord", func(t *testing.T) {
-		records, err := queries.LisRecord(ctx, userID)
+		records, err := queries.ListRecord(ctx, userID)
 		if err != nil {
 			t.Fatalf("Error al listar records: %v", err)
 		}
