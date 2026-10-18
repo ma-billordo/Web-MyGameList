@@ -1,10 +1,16 @@
 version: "2"
 sql:
-- engine: "postgresql"
-  queries: "./db/queries/"
-  schema: "./db/schema/"
-  gen:
-    go:
-      package: "db"
-      out: "./db/sqlc/"
-      emit_json_tags: true
+  - engine: "postgresql"
+    queries: "db/queries/"
+    schema: "db/schema/"
+    gen:
+      go:
+        package: "db"
+        out: "db/sqlc/"
+        emit_json_tags: true
+        overrides:
+          - db_type: "pg_catalog.int4"
+            nullable: true
+            go_type:
+              type: "int32"
+              pointer: true

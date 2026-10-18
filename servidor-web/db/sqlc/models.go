@@ -4,22 +4,18 @@
 
 package db
 
-import (
-	"database/sql"
-)
-
 type Catalogue struct {
-	IDUser int32         `json:"id_user"`
-	IDGame int32         `json:"id_game"`
-	Score  sql.NullInt32 `json:"score"`
-	Status string        `json:"status"`
+	IDUser int32  `json:"id_user"`
+	IDGame int32  `json:"id_game"`
+	Score  *int32 `json:"score"`
+	Status string `json:"status"`
 }
 
 type Library struct {
-	IDGame      int32          `json:"id_game"`
-	Title       string         `json:"title"`
-	Description string         `json:"description"`
-	AvgScore    sql.NullString `json:"avg_score"`
+	IDGame      int32  `json:"id_game"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	AvgScore    string `json:"avg_score"`
 }
 
 type User struct {

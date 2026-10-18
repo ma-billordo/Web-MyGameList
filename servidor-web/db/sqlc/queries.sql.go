@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createGame = `-- name: CreateGame :one
@@ -35,10 +34,10 @@ VALUES ($1, $2, $3, $4)
 `
 
 type CreateRecordParams struct {
-	IDUser int32         `json:"id_user"`
-	IDGame int32         `json:"id_game"`
-	Score  sql.NullInt32 `json:"score"`
-	Status string        `json:"status"`
+	IDUser int32  `json:"id_user"`
+	IDGame int32  `json:"id_game"`
+	Score  *int32 `json:"score"`
+	Status string `json:"status"`
 }
 
 // CATALOGUE
@@ -307,10 +306,10 @@ WHERE id_user = $1 AND id_game = $2
 `
 
 type UpdateRecordParams struct {
-	IDUser int32         `json:"id_user"`
-	IDGame int32         `json:"id_game"`
-	Score  sql.NullInt32 `json:"score"`
-	Status string        `json:"status"`
+	IDUser int32  `json:"id_user"`
+	IDGame int32  `json:"id_game"`
+	Score  *int32 `json:"score"`
+	Status string `json:"status"`
 }
 
 func (q *Queries) UpdateRecord(ctx context.Context, arg UpdateRecordParams) (int64, error) {
