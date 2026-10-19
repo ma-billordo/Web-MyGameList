@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -9,6 +8,8 @@ import (
 	"os"
 
 	db "MyGameList.com/db/sqlc"
+	"MyGameList.com/internal/middleware"
+	"MyGameList.com/pkg/handlers"
 
 	_ "github.com/lib/pq"
 )
@@ -18,15 +19,14 @@ import (
 func abrirDB() (*sql.DB, error) {
 	connStr := os.Getenv("DB_URL")
 	if connStr == "" {
-		return nil, fmt.Errorf("La variable de entorno DB_URL no está seteada")
+		return nil, fmt.Errorf("la variable de entorno DB_URL no está seteada")
 	}
 	conn, err := sql.Open("postgres", connStr)
 	if err != nil {
-		defer conn.Close()
 		return nil, err
 	}
 	if err := conn.Ping(); err != nil {
-		defer conn.Close()
+		conn.Close()
 		return nil, err
 	}
 	conn.SetMaxOpenConns(25)
@@ -35,7 +35,7 @@ func abrirDB() (*sql.DB, error) {
 
 //// Handlers ////
 
-func serveForm(w http.ResponseWriter, r *http.Request) {
+func serveIndex(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -53,21 +53,24 @@ func serveForm(w http.ResponseWriter, r *http.Request) {
 func main() {
 	conn, err := abrirDB()
 	if err != nil {
-		log.Fatalf("Error al iniciar la BD: (%v)", err)
+		log.Fatalf("error al iniciar la BD: (%v)", err)
 	}
 	defer conn.Close()
 
 	queries := db.New(conn)
-	ctx := context.Background()
+	server := handlers.NewServer(queries)
 
-	//------ main anterior
-	http.HandleFunc("/", serveForm)
+	http.HandleFunc("/", serveIndex)
+	http.Handle("/users", middleware.Logging(http.HandlerFunc(server.UsersHandler)))
+	http.Handle("/users/", middleware.Logging(http.HandlerFunc(server.UserHandler)))
+	http.Handle("/library", middleware.Logging(http.HandlerFunc(server.LibrariesHandler)))
+	http.Handle("/library/", middleware.Logging(http.HandlerFunc(server.LibraryHandler)))
+	http.Handle("/catalogues/", middleware.Logging(http.HandlerFunc(server.CataloguesHandler)))
+	http.Handle("/catalogue/", middleware.Logging(http.HandlerFunc(server.CatalogueHandler)))
 
 	port := ":8080"
 	fmt.Printf("Servidor escuchando en http://localhost%s\n", port)
 
-	err = http.ListenAndServe(port, nil)
-	if err != nil {
-		fmt.Printf("Error al iniciar el servidor: %s\n", err)
-	}
+	log.Fatal(http.ListenAndServe(port, nil))
+
 }
