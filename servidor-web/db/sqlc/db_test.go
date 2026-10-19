@@ -227,7 +227,7 @@ func TestGameList_CRUD(t *testing.T) {
 		} else {
 			fmt.Printf("Status del registro: %s\n", r.Status)
 		}
-		if r.Score != nil || *r.Score != 2 {
+		if *r.Score != 2 {
 			t.Errorf("Score esperado %q, obtenido %q\n", 2, *r.Score)
 		} else {
 			fmt.Printf("Score: %d\n", *r.Score)

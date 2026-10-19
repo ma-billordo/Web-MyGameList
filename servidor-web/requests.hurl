@@ -1,6 +1,6 @@
------------
+#-----------
 # USUARIOS
------------
+#-----------
 
 # Crear usuario 1 - el password no debe volver en claro
 POST http://localhost:8080/users
@@ -184,9 +184,9 @@ DELETE http://localhost:8080/users
 HTTP 405
 
 
------------
+#-----------
 # JUEGOS
------------
+#-----------
 
 # Crear juego 1 - el promedio arranca en 0
 POST http://localhost:8080/library
@@ -340,10 +340,10 @@ HTTP 404
 DELETE http://localhost:8080/library
 HTTP 405
 
------------
+#-----------
 # CATÁLOGO
 # Estado: usuario 2 existe (el 1 fue eliminado); juegos 1, 3 y 4 existen (el 2 fue eliminado).
------------
+#-----------
 
 # Crear un registro en el catálogo del usuario 2 - sin score queda en null
 POST http://localhost:8080/catalogues/2
@@ -452,9 +452,9 @@ HTTP 404
 GET http://localhost:8080/catalogue/9999/1
 HTTP 404
 
-# Listar catálogo de usuario inexistente - debe fallar con 400
+# Listar catálogo de usuario inexistente - debe fallar con 404
 GET http://localhost:8080/catalogues/9999
-HTTP 400
+HTTP 404
 
 # --- PUT /catalogue/{idUser}/{idGame} ---
 

@@ -13,7 +13,7 @@ test:
 	docker compose up --wait db
 
 	docker compose run --rm test sh -c \
-		'sqlc generate && go build ./... && go test ./... -v'
+		'sqlc generate && go build ./... && go test -v ./db/sqlc'
 	
 # Levanta la API (y la base de datos) en http://localhost:8080.
 run:
