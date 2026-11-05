@@ -74,7 +74,7 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("UpdateUser", func(t *testing.T) {
-		err := queries.UpdateUser(ctx, UpdateUserParams{
+		_, err := queries.UpdateUser(ctx, UpdateUserParams{
 			IDUser: userID,
 			Name:   "valen",
 			Email:  "valen@gmail.com",
@@ -145,16 +145,16 @@ func TestGameList_CRUD(t *testing.T) {
 			fmt.Printf("Titulo del juego: %s\n", g.Title)
 		}
 		fmt.Printf("Descripción del juego: %s\n", g.Description)
-		if !g.AvgScore.Valid || g.AvgScore.String != "0.00" {
-			t.Errorf("AvgScore esperado %q, ontenido %q\n", "0.00", g.AvgScore.String)
+		if g.AvgScore != "0.00" {
+			t.Errorf("AvgScore esperado %q, ontenido %q\n", "0.00", g.AvgScore)
 		} else {
-			fmt.Printf("Puntuación media del juego: %s\n", g.AvgScore.String)
+			fmt.Printf("Puntuación media del juego: %s\n", g.AvgScore)
 		}
 
 	})
 
 	t.Run("UpdateGame", func(t *testing.T) {
-		err := queries.UpdateGame(ctx, UpdateGameParams{
+		_, err := queries.UpdateGame(ctx, UpdateGameParams{
 			IDGame:      gameID,
 			Title:       "PAYDAY 2",
 			Description: "FPS, Cooperativo Online",
@@ -174,7 +174,7 @@ func TestGameList_CRUD(t *testing.T) {
 			fmt.Printf("Titulo del juego: %s\n", g.Title)
 		}
 		fmt.Printf("Descripción del juego: %s\n", g.Description)
-		fmt.Printf("Puntuación media del juego: %s\n", g.AvgScore.String)
+		fmt.Printf("Puntuación media del juego: %s\n", g.AvgScore)
 	})
 
 	t.Run("ListGames", func(t *testing.T) {
@@ -185,7 +185,7 @@ func TestGameList_CRUD(t *testing.T) {
 		found := false
 		fmt.Println("-----LISTADO-----")
 		for _, g := range games {
-			fmt.Printf("ID: %v  Titulo: %s\nDescripcion: %s\nPuntuación promedio: %s\n", g.IDGame, g.Title, g.Description, g.AvgScore.String)
+			fmt.Printf("ID: %v  Titulo: %s\nDescripcion: %s\nPuntuación promedio: %s\n", g.IDGame, g.Title, g.Description, g.AvgScore)
 			fmt.Println("--------")
 			if g.IDGame == gameID {
 				found = true
@@ -198,10 +198,11 @@ func TestGameList_CRUD(t *testing.T) {
 
 	// ---------- CATALOGUE (Record) ----------
 	success = t.Run("CreateRecord", func(t *testing.T) {
+		var n int32 = 2
 		err := queries.CreateRecord(ctx, CreateRecordParams{
 			IDUser: userID,
 			IDGame: gameID,
-			Score:  sql.NullInt32{Int32: 2, Valid: true},
+			Score:  &n,
 			Status: "Completado",
 		})
 		if err != nil {
@@ -226,18 +227,19 @@ func TestGameList_CRUD(t *testing.T) {
 		} else {
 			fmt.Printf("Status del registro: %s\n", r.Status)
 		}
-		if !r.Score.Valid || r.Score.Int32 != 2 {
-			t.Errorf("Score esperado %q, obtenido %q\n", 2, r.Score.Int32)
+		if *r.Score != 2 {
+			t.Errorf("Score esperado %q, obtenido %q\n", 2, *r.Score)
 		} else {
-			fmt.Printf("Score: %d\n", r.Score.Int32)
+			fmt.Printf("Score: %d\n", *r.Score)
 		}
 	})
 
 	t.Run("UpdateRecord", func(t *testing.T) {
-		err := queries.UpdateRecord(ctx, UpdateRecordParams{
+		var n int32 = 4
+		_, err := queries.UpdateRecord(ctx, UpdateRecordParams{
 			IDUser: userID,
 			IDGame: gameID,
-			Score:  sql.NullInt32{Int32: 4, Valid: true},
+			Score:  &n,
 			Status: "Platinado",
 		})
 		if err != nil {
@@ -254,18 +256,18 @@ func TestGameList_CRUD(t *testing.T) {
 		} else {
 			fmt.Printf("Status del registro: %s\n", r.Status)
 		}
-		fmt.Printf("Score: %d\n", r.Score.Int32)
+		fmt.Printf("Score: %d\n", *r.Score)
 	})
 
 	t.Run("ListRecord", func(t *testing.T) {
-		records, err := queries.LisRecord(ctx, userID)
+		records, err := queries.ListRecord(ctx, userID)
 		if err != nil {
 			t.Fatalf("Error al listar records: %v", err)
 		}
 		found := false
 		fmt.Println("-----LISTADO-----")
 		for _, r := range records {
-			fmt.Printf("IDs: %v, %v  Status: %s  Puntuación: %d\n", r.IDUser, r.IDGame, r.Status, r.Score.Int32)
+			fmt.Printf("IDs: %v, %v  Status: %s  Puntuación: %d\n", r.IDUser, r.IDGame, r.Status, *r.Score)
 			fmt.Println("--------")
 			if r.IDUser == userID && r.IDGame == gameID {
 				found = true
@@ -278,7 +280,7 @@ func TestGameList_CRUD(t *testing.T) {
 
 	// ---------- Cleanup: Record, Game y User ----------
 	t.Run("DeleteRecord", func(t *testing.T) {
-		err := queries.DeleteRecord(ctx, DeleteRecordParams{
+		_, err := queries.DeleteRecord(ctx, DeleteRecordParams{
 			IDUser: userID,
 			IDGame: gameID,
 		})
@@ -294,7 +296,7 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("DeleteGame", func(t *testing.T) {
-		err := queries.DeleteGame(ctx, gameID)
+		_, err := queries.DeleteGame(ctx, gameID)
 		if err != nil {
 			t.Fatalf("Error al eliminar juego: %v\n", err)
 		}
@@ -307,7 +309,7 @@ func TestGameList_CRUD(t *testing.T) {
 	})
 
 	t.Run("DeleteUser", func(t *testing.T) {
-		err := queries.DeleteUser(ctx, userID)
+		_, err := queries.DeleteUser(ctx, userID)
 		if err != nil {
 			t.Fatalf("Error al eliminar usuario: %v\n", err)
 		}

@@ -1,0 +1,3 @@
+servidor-web/db/sqlc/db.go
+servidor-web/db/sqlc/models.go
+servidor-web/db/sqlc/queries.sql.go
