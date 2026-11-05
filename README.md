@@ -27,6 +27,7 @@ El esquema completo se encuentra en `db/schema/schema.sql`, y las consultas SQL 
 Todo corre dentro de contenedores Docker (API y PostgreSQL), sin instalar Go ni PostgreSQL en la máquina host. Desde la raíz del proyecto:
 
 ```bash
+cd servidor-web
 make run
 ```
 
@@ -58,6 +59,7 @@ Los cuerpos de las peticiones y respuestas son JSON. Los errores devuelven un me
 Las pruebas están escritas con `Hurl` en `requests.hurl`, y se ejecutan con un único comando:
 
 ```bash
+cd servidor-web
 make api-test
 ```
 
@@ -79,6 +81,7 @@ Todo el flujo de testing está automatizado con un `Makefile`, que se apoya en `
 Para correr los tests, desde la raíz del proyecto:
 
 ```bash
+cd servidor-web
 make test
 ```
 
@@ -120,5 +123,6 @@ Esto ejecuta, en orden:
 
 ## Limitaciones conocidas
 
+- La primera vez la base puede tardar varios segundos en inicializarse
 - Por el momento no hay autenticación ni autorización: cualquier cliente puede leer y modificar cualquier recurso.
 - No hay restricción de título único en `Library`.
