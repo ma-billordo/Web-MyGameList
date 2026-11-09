@@ -48,14 +48,6 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "template/index.html")
 }
 
-func serveUsuarios(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	http.ServeFile(w, r, "template/usuarios.html")
-}
-
 //// Main ////
 
 func main() {
