@@ -45,7 +45,7 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "index.html")
+	http.ServeFile(w, r, "template/index.html")
 }
 
 //// Main ////
@@ -59,6 +59,8 @@ func main() {
 
 	queries := db.New(conn)
 	server := handlers.NewServer(queries)
+
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	http.HandleFunc("/", serveIndex)
 	http.Handle("/users", middleware.Logging(http.HandlerFunc(server.UsersHandler)))

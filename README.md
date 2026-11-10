@@ -17,6 +17,7 @@ El esquema de la base de datos (PostgreSQL) está compuesto por tres tablas:
 El esquema completo se encuentra en `db/schema/schema.sql`, y las consultas SQL utilizadas para generar el código de acceso a datos están en `db/queries/queries.sql`.
 ### Modelo relacional
 ![diagrama](diagrama.png)
+
 ## Requisitos
 
 * Si no está instalado, usar el siguiente comando para instalar docker-compose: `sudo apt install docker-compose-v2`
@@ -32,6 +33,17 @@ make run
 ```
 
 Esto construye la imagen del servidor, levanta PostgreSQL con el esquema de `db/schema/schema.sql` y deja la API escuchando en `http://localhost:8080`. La API se compila al arrancar el contenedor, por lo que puede tardar unos segundos en responder. Se detiene con `Ctrl+C`, y `make clean` elimina los contenedores y los datos.
+
+## Interfaz web (TP4)
+
+Al correr `make run` y abrir `http://localhost:8080` se muestra la página principal, donde se puede:
+
+- **Cargar un juego** con el formulario (título y descripción).
+- **Ver la biblioteca** como tarjetas organizadas en 3 columnas.
+- **Borrar un juego** con el botón de cada tarjeta.
+
+El frontend (HTML, CSS y JavaScript) se consume desde la API REST del TP3 y lo sirve el mismo servidor Go: `template/index.html` en la raíz y los archivos de `static/` (`css/styles.css` y `js/app.js`).
+
 ## API
 
 | Recurso  | Método y URL                          | Descripción                              | Respuestas         |
