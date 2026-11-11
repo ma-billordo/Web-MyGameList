@@ -1,0 +1,11 @@
+package views
+
+import "MyGameList.com/db/sqlc"
+
+templ IndexPage(games []db.Library) {
+    @Layout("MyGameList") {
+        <h1>MyGameList 🎮</h1>
+        @LibraryForm()
+        @LibraryList(games)
+    }
+}

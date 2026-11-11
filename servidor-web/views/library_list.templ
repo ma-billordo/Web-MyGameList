@@ -1,0 +1,18 @@
+package views
+
+import (
+    "fmt"
+    "MyGameList.com/db/sqlc"
+)
+
+templ LibraryList(games []db.Library) {
+    for _, game := range games {
+        <article>
+            <h4>{ game.Title }</h4>
+            <p>{ game.Description }</p>
+            <form method="POST" action={ templ.SafeURL(fmt.Sprintf("/library/%d/delete", game.IDGame)) }>
+                <button type="submit">Borrar</button>
+            </form>
+        </article>
+    }
+}
