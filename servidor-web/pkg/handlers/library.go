@@ -1,32 +1,87 @@
 package handlers
 
 import (
-	"database/sql"
-	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
 	db "MyGameList.com/db/sqlc"
+	"MyGameList.com/views"
 )
 
-func (s *Server) LibrariesHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		s.ListGames(w, r)
-	case http.MethodPost:
-		s.CreateGame(w, r)
-	default:
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+func (s *Server) IndexHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	gameList, err := s.queries.ListGames(r.Context())
+	if err != nil {
+		log.Printf("error al listar los juegos: %v", err)
+		http.Error(w, "error al listar los juegos", http.StatusInternalServerError)
+		return
+	}
+	//si está vacia devuelve nil y el for de templ simplemento no itera
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := views.IndexPage(gameList).Render(r.Context(), w); err != nil {
+		log.Printf("error al renderizar la página: %v", err)
+		http.Error(w, "error al mostrar la página", http.StatusInternalServerError)
 	}
 }
 
-func (s *Server) LibraryHandler(w http.ResponseWriter, r *http.Request) {
+// POST /library - Crea nuevo juego
+func (s *Server) CreateGame(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Leer campos
+	title := r.FormValue("title")
+	description := r.FormValue("description")
+
+	// Validacion
+	if msg := validateGameData(title, description); msg != "" {
+		http.Error(w, msg, http.StatusBadRequest)
+		return
+	}
+
+	// Carga de datos en la BD
+	_, err := s.queries.CreateGame(r.Context(), db.CreateGameParams{
+		Title:       title,
+		Description: description,
+	})
+	if err != nil {
+		log.Printf("error al crear el juego: %v", err)
+		http.Error(w, "error al crear el juego", http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+// POST /library/{id}/delete - Eliminar juego por id
+func (s *Server) DeleteGame(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Capturar el ID y verificar DELETE del path
 	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) != 3 {
-		http.Error(w, "invalid URL", http.StatusBadRequest)
+	if len(parts) != 4 {
+		http.Error(w, "invalid URL (length)", http.StatusBadRequest)
+		return
+	}
+	if parts[3] != "delete" {
+		http.Error(w, "invalid URL (path)", http.StatusBadRequest)
 		return
 	}
 	id64, err := strconv.ParseInt(parts[2], 10, 32)
@@ -35,140 +90,8 @@ func (s *Server) LibraryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := int32(id64)
-	// Elige según método
-	switch r.Method {
-	case http.MethodGet:
-		s.GetGame(w, r, id)
-	case http.MethodPut:
-		s.UpdateGame(w, r, id)
-	case http.MethodDelete:
-		s.DeleteGame(w, r, id)
-	default:
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-	}
-}
 
-// POST /library - Crea nuevo juego
-func (s *Server) CreateGame(w http.ResponseWriter, r *http.Request) {
-	var newGame db.Library
-
-	// Decodificación de datos en la variable
-	err := json.NewDecoder(r.Body).Decode(&newGame)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Validacion
-	if msg := validateGameData(newGame.Title, newGame.Description); msg != "" {
-		http.Error(w, msg, http.StatusBadRequest)
-		return
-	}
-
-	// Carga de datos en la BD
-	gameID, err := s.queries.CreateGame(r.Context(), db.CreateGameParams{
-		Title:       newGame.Title,
-		Description: newGame.Description,
-	})
-	if err != nil {
-		log.Printf("error al crear el juego: %v", err)
-		http.Error(w, "error al crear el juego", http.StatusInternalServerError)
-		return
-	}
-
-	// Codificación de datos
-	newGame.IDGame = gameID
-	newGame.AvgScore = "0.00"
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	json.NewEncoder(w).Encode(newGame)
-}
-
-// GET /library - Listar juegos
-func (s *Server) ListGames(w http.ResponseWriter, r *http.Request) {
-	gameList, err := s.queries.ListGames(r.Context())
-	if err != nil {
-		log.Printf("error al listar los juegos: %v", err)
-		http.Error(w, "error al listar los juegos", http.StatusInternalServerError)
-		return
-	}
-	//si está vacia no devuelve null, devuelve la lista vacía
-	if gameList == nil {
-		gameList = []db.Library{} //crea un slice vacio de tipo Library
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(gameList)
-}
-
-// GET /library/{id} - Obtener juego por id
-func (s *Server) GetGame(w http.ResponseWriter, r *http.Request, id int32) {
-	game, err := s.queries.GetGame(r.Context(), id)
-
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			http.Error(w, "juego no encontrado", http.StatusNotFound)
-			return
-		}
-		log.Printf("error al obtener el juego: %v", err)
-		http.Error(w, "error al obtener el juego", http.StatusInternalServerError)
-		return
-	}
-
-	//codificacion de datos
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(game)
-}
-
-// PUT /library/{id} - Actualizar juego por id
-func (s *Server) UpdateGame(w http.ResponseWriter, r *http.Request, id int32) {
-	var updatedGame db.UpdateGameParams
-
-	// Decodificación de datos
-	err := json.NewDecoder(r.Body).Decode(&updatedGame)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Validación
-	if msg := validateGameData(updatedGame.Title, updatedGame.Description); msg != "" {
-		http.Error(w, msg, http.StatusBadRequest)
-		return
-	}
-
-	// Actualización de datos en la BD
-	result, err := s.queries.UpdateGame(r.Context(), db.UpdateGameParams{
-		IDGame:      id,
-		Title:       updatedGame.Title,
-		Description: updatedGame.Description,
-	})
-
-	if err != nil {
-		log.Printf("error al actualizar el juego: %v", err)
-		http.Error(w, "error al actualizar el juego", http.StatusInternalServerError)
-		return
-	}
-	if result == 0 {
-		http.Error(w, "juego no encontrado", http.StatusNotFound)
-		return
-	}
-
-	// Codificación de datos
-	updatedGame.IDGame = id
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	json.NewEncoder(w).Encode(updatedGame)
-}
-
-// DELETE /library/{id} - Eliminar juego por id
-func (s *Server) DeleteGame(w http.ResponseWriter, r *http.Request, id int32) {
+	// Borrar de la BD
 	rows, err := s.queries.DeleteGame(r.Context(), id)
 	if err != nil {
 		log.Printf("error al eliminar el juego: %v", err)
@@ -180,7 +103,8 @@ func (s *Server) DeleteGame(w http.ResponseWriter, r *http.Request, id int32) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	// Redirect
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 // Funciones auxiliares
