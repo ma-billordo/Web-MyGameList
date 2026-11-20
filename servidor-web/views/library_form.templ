@@ -1,0 +1,14 @@
+package views
+
+templ LibraryForm() {
+    <h3>Cargar un juego</h3>
+    <form method="POST" action="/library">
+        <label for="title">Título</label>
+        <input type="text" id="title" name="title" required/>
+
+        <label for="description">Descripción</label>
+        <input type="text" id="description" name="description" required/>
+
+        <button type="submit">Subir</button>
+    </form>
+}

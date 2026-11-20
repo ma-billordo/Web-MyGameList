@@ -2,3 +2,7 @@ servidor-web/db/sqlc/db.go
 servidor-web/db/sqlc/models.go
 servidor-web/db/sqlc/queries.sql.go
 servidor-web/makefile.dev
+servidor-web/views/*_templ.go
+servidor-web/pkg/handlers/catalogue.go
+servidor-web/pkg/handlers/user.go
+servidor-web/template/*

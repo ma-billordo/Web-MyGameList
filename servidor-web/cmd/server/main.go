@@ -33,23 +33,7 @@ func abrirDB() (*sql.DB, error) {
 	return conn, nil
 }
 
-//// Handlers ////
-
-func serveIndex(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	http.ServeFile(w, r, "template/index.html")
-}
-
-//// Main ////
-
+// // Main ////
 func main() {
 	conn, err := abrirDB()
 	if err != nil {
@@ -60,15 +44,9 @@ func main() {
 	queries := db.New(conn)
 	server := handlers.NewServer(queries)
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
-	http.HandleFunc("/", serveIndex)
-	http.Handle("/users", middleware.Logging(http.HandlerFunc(server.UsersHandler)))
-	http.Handle("/users/", middleware.Logging(http.HandlerFunc(server.UserHandler)))
-	http.Handle("/library", middleware.Logging(http.HandlerFunc(server.LibrariesHandler)))
-	http.Handle("/library/", middleware.Logging(http.HandlerFunc(server.LibraryHandler)))
-	http.Handle("/catalogues/", middleware.Logging(http.HandlerFunc(server.CataloguesHandler)))
-	http.Handle("/catalogue/", middleware.Logging(http.HandlerFunc(server.CatalogueHandler)))
+	http.Handle("/", middleware.Logging(http.HandlerFunc(server.IndexHandler)))
+	http.Handle("/library", middleware.Logging(http.HandlerFunc(server.CreateGame)))
+	http.Handle("/library/", middleware.Logging(http.HandlerFunc(server.DeleteGame)))
 
 	port := ":8080"
 	fmt.Printf("Servidor escuchando en http://localhost%s\n", port)
