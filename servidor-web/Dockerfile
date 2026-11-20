@@ -4,8 +4,8 @@ FROM golang:1.27.4
 
 WORKDIR /app
 
-RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-RUN go install github.com/a-h/templ/cmd/templ@latest
+RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
+RUN go install github.com/a-h/templ/cmd/templ@v0.3.1100
 
 COPY go.mod go.sum ./
 RUN go mod download
