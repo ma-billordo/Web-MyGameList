@@ -2,10 +2,18 @@ package views
 
 import "MyGameList.com/db/sqlc"
 
-templ IndexPage(games []db.Library) {
+templ IndexPage(games []db.Library, users []db.ListUsersRow) {
     @Layout("MyGameList") {
         <h1>MyGameList 🎮</h1>
+
+        <h2>Juegos</h2>
         @LibraryForm()
         @LibraryList(games)
+
+        <hr/>
+
+        <h2>Usuarios</h2>
+        @UserForm()
+        @UserList(users)
     }
 }

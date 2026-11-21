@@ -26,10 +26,17 @@ func (s *Server) IndexHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error al listar los juegos", http.StatusInternalServerError)
 		return
 	}
-	//si está vacia devuelve nil y el for de templ simplemento no itera
+
+	//agregado nuevo (usuarios)
+	userList, err := s.queries.ListUsers(r.Context())
+	if err != nil {
+		log.Printf("error al listar los usuarios: %v", err)
+		http.Error(w, "error al listar los usuarios", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := views.IndexPage(gameList).Render(r.Context(), w); err != nil {
+	if err := views.IndexPage(gameList, userList).Render(r.Context(), w); err != nil {
 		log.Printf("error al renderizar la página: %v", err)
 		http.Error(w, "error al mostrar la página", http.StatusInternalServerError)
 	}
@@ -131,15 +138,4 @@ func validateGameData(title string, description string) string {
 		return "la descripción del juego no puede estar vacía"
 	}
 	return ""
-}
-
-// writeError responde con un status de error y el mensaje como fragmento HTML,
-// para que HTMX lo muestre en el contenedor de error que corresponda
-// (#form-error en el formulario, o el de cada tarjeta al borrar).
-func writeError(w http.ResponseWriter, r *http.Request, status int, msg string) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-	if err := views.ErrorMessage(msg).Render(r.Context(), w); err != nil {
-		log.Printf("error al renderizar el mensaje de error: %v", err)
-	}
 }
