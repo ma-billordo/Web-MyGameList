@@ -7,6 +7,12 @@ templ Layout(title string) {
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+        <script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0/dist/htmx.min.js"
+            integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"
+            crossorigin="anonymous"></script>
+        <style>
+            #library-list:has(article) > .empty-message { display: none; }
+        </style>
         <title>{ title }</title>
     </head>
     <body>
