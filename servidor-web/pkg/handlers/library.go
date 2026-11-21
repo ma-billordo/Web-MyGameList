@@ -48,7 +48,7 @@ func (s *Server) CreateGame(w http.ResponseWriter, r *http.Request) {
 
 	// Validacion
 	if msg := validateGameData(title, description); msg != "" {
-		http.Error(w, msg, http.StatusBadRequest)
+		writeError(w, r, http.StatusBadRequest, msg)
 		return
 	}
 
@@ -59,29 +59,38 @@ func (s *Server) CreateGame(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("error al crear el juego: %v", err)
-		http.Error(w, "error al crear el juego", http.StatusInternalServerError)
+		writeError(w, r, http.StatusInternalServerError, "error al crear el juego")
 		return
 	}
 
-	// Redirect
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	gameList, err := s.queries.ListGames(r.Context())
+	if err != nil {
+		log.Printf("error al listar los juegos: %v", err)
+		writeError(w, r, http.StatusInternalServerError, "error al listar los juegos")
+		return
+	}
+	//si está vacia devuelve nil y el for de templ simplemento no itera
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if err := views.LibraryList(gameList).Render(r.Context(), w); err != nil {
+		log.Printf("error al renderizar la lista: %v", err)
+		http.Error(w, "error al mostrar la lista", http.StatusInternalServerError)
+		return
+	}
 }
 
-// POST /library/{id}/delete - Eliminar juego por id
+// DELETE /library/{id} - Eliminar juego por id
 func (s *Server) DeleteGame(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodDelete {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Capturar el ID y verificar DELETE del path
+	// Capturar el ID
 	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) != 4 {
+	if len(parts) != 3 {
 		http.Error(w, "invalid URL (length)", http.StatusBadRequest)
-		return
-	}
-	if parts[3] != "delete" {
-		http.Error(w, "invalid URL (path)", http.StatusBadRequest)
 		return
 	}
 	id64, err := strconv.ParseInt(parts[2], 10, 32)
@@ -95,16 +104,16 @@ func (s *Server) DeleteGame(w http.ResponseWriter, r *http.Request) {
 	rows, err := s.queries.DeleteGame(r.Context(), id)
 	if err != nil {
 		log.Printf("error al eliminar el juego: %v", err)
-		http.Error(w, "error al eliminar el juego", http.StatusInternalServerError)
+		writeError(w, r, http.StatusInternalServerError, "error al eliminar el juego")
 		return
 	}
 	if rows == 0 {
-		http.Error(w, "juego no encontrado", http.StatusNotFound)
+		writeError(w, r, http.StatusNotFound, "juego no encontrado")
 		return
 	}
 
-	// Redirect
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// Respuesta vacía con 200: HTMX reemplaza el <article> por "nada"
+	w.WriteHeader(http.StatusOK)
 }
 
 // Funciones auxiliares
@@ -122,4 +131,15 @@ func validateGameData(title string, description string) string {
 		return "la descripción del juego no puede estar vacía"
 	}
 	return ""
+}
+
+// writeError responde con un status de error y el mensaje como fragmento HTML,
+// para que HTMX lo muestre en el contenedor de error que corresponda
+// (#form-error en el formulario, o el de cada tarjeta al borrar).
+func writeError(w http.ResponseWriter, r *http.Request, status int, msg string) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
+	if err := views.ErrorMessage(msg).Render(r.Context(), w); err != nil {
+		log.Printf("error al renderizar el mensaje de error: %v", err)
+	}
 }

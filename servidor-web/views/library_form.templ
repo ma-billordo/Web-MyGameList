@@ -2,13 +2,28 @@ package views
 
 templ LibraryForm() {
     <h3>Cargar un juego</h3>
-    <form method="POST" action="/library">
+    <form
+        hx-post="/library"
+        hx-target="#library-list"
+        hx-swap="outerHTML"
+        hx-status:400="target:#form-error swap:innerHTML"
+        hx-status:500="target:#form-error swap:innerHTML"
+        hx-on:htmx:after:swap="
+            if (ctx.response.status < 400) { 
+                this.reset();
+                document.getElementById('form-error').innerHTML = '' }">
         <label for="title">Título</label>
         <input type="text" id="title" name="title" required/>
 
         <label for="description">Descripción</label>
         <input type="text" id="description" name="description" required/>
-
+        
+        <div id="form-error"></div>
         <button type="submit">Subir</button>
     </form>
+}
+
+// ErrorMessage es el fragmento HTML que devuelve el servidor cuando una operación falla.
+templ ErrorMessage(msg string) {
+    <small>{ msg }</small>
 }

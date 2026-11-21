@@ -4,19 +4,28 @@ import (
     "fmt"
     "MyGameList.com/db/sqlc"
 )
+func gameErrorID(id int32) string {
+    return fmt.Sprintf("game-error-%d", id)
+}
 
 templ LibraryList(games []db.Library) {
-    if len(games) == 0 {
-        <p>Todavía no hay juegos cargados. ¡Agregá el primero con el formulario!</p>
-    } else {
+    <div id="library-list">
+        <p class="empty-message">Todavía no hay juegos cargados. ¡Agregá el primero con el formulario!</p>
         for _, game := range games {
             <article>
                 <h4>{ game.Title }</h4>
                 <p>{ game.Description }</p>
-                <form method="POST" action={ templ.SafeURL(fmt.Sprintf("/library/%d/delete", game.IDGame)) }>
-                    <button type="submit">Borrar</button>
-                </form>
+                <button
+                    hx-delete={ fmt.Sprintf("/library/%d", game.IDGame) }
+                    hx-target="closest article"
+                    hx-swap="outerHTML"
+                    hx-confirm="¿Seguro que querés borrar este juego?"
+                    hx-status:404={ "target:#" + gameErrorID(game.IDGame) + " swap:innerHTML" }
+                    hx-status:500={ "target:#" + gameErrorID(game.IDGame) + " swap:innerHTML" }>
+                    Borrar
+                </button>
+                <div id={ gameErrorID(game.IDGame) }></div>
             </article>
         }
-    }
+    </div>
 }
