@@ -1,0 +1,55 @@
+package views
+
+import (
+    "fmt"
+    "MyGameList.com/db/sqlc"
+)
+
+templ CatalogueForm(idUser int32, games []db.Library) {
+    <h3>Agregar un juego al catálogo</h3>
+    if len(games) == 0 {
+        <p>Aún no hay juegos cargados. <a href="/library">Cargá el primero.</a></p>
+    } else {
+        <form
+            hx-post={ fmt.Sprintf("/catalogue/%d", idUser) }
+            hx-target="#catalogue-list"
+            hx-swap="outerHTML"
+            hx-status:400="target:#catalogue-form-error swap:innerHTML"
+            hx-status:404="target:#catalogue-form-error swap:innerHTML"
+            hx-status:409="target:#catalogue-form-error swap:innerHTML"
+            hx-status:500="target:#catalogue-form-error swap:innerHTML"
+            hx-on:htmx:after:swap="
+                if (ctx.response.status < 400) {
+                    this.reset();
+                    document.getElementById('catalogue-form-error').innerHTML = '' }">
+            <label for="game">Juego</label>
+            <select id="game" name="game" required>
+                <option value="" disabled selected>Elegí un juego</option>
+                for _, g := range games {
+                    <option value={ fmt.Sprint(g.IDGame) }>{ g.Title }</option>
+                }
+            </select>
+
+            <label for="status">Estado</label>
+            <select id="status" name="status" required>
+                <option value="Por jugar">Por jugar</option>
+                <option value="Jugando">Jugando</option>
+                <option value="Completado">Completado</option>
+                <option value="Platinado">Platinado</option>
+            </select>
+
+            <label for="score">Puntaje</label>
+            <select id="score" name="score">
+                <option value="">Sin puntaje</option>
+                <option value="1">⭐</option>
+                <option value="2">⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐</option>
+                <option value="5">⭐⭐⭐⭐⭐</option>
+            </select>
+
+            <div id="catalogue-form-error"></div>
+            <button type="submit">Agregar</button>
+        </form>
+    }
+}

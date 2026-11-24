@@ -14,6 +14,14 @@ templ LibraryList(games []db.Library) {
         for _, game := range games {
             <article>
                 <h4>{ game.Title }</h4>
+                <div class="card-head">
+                    <h4>{ game.Title }</h4>
+                    if game.AvgScore == "0.00" {
+                        <small>Sin puntajes</small>
+                    } else {
+                        <strong>⭐ { game.AvgScore }</strong>
+                    }
+                </div>
                 <p>{ game.Description }</p>
                 <button
                     hx-delete={ fmt.Sprintf("/library/%d", game.IDGame) }

@@ -1,0 +1,28 @@
+package views
+
+templ UserForm() {
+    <h3>Registrar un usuario</h3>
+    <form
+        hx-post="/users"
+        hx-target="#user-list"
+        hx-swap="outerHTML"
+        hx-status:400="target:#user-form-error swap:innerHTML"
+        hx-status:409="target:#user-form-error swap:innerHTML"
+        hx-status:500="target:#user-form-error swap:innerHTML"
+        hx-on:htmx:after:swap="
+            if (ctx.response.status < 400) {
+                this.reset();
+                document.getElementById('user-form-error').innerHTML = '' }">
+        <label for="name">Nombre</label>
+        <input type="text" id="name" name="name" required/>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required/>
+
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" required/>
+
+        <div id="user-form-error"></div>
+        <button type="submit">Registrar</button>
+    </form>
+}

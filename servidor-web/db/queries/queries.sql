@@ -14,6 +14,16 @@ SELECT id_user, name, email
 FROM Users
 ORDER BY id_user;
 
+-- name: ListUsersOrderByNameAsc :many
+SELECT *
+FROM user_info
+ORDER BY name ASC, id_user;
+
+-- name: ListUsersOrderByNameDesc :many
+SELECT * 
+FROM user_info 
+ORDER BY name DESC, id_user;
+
 -- name: UpdateUser :execrows
 UPDATE Users
 SET name = $2, email =$3
@@ -63,6 +73,12 @@ SELECT id_user, id_game, score, status
 FROM Catalogue
 WHERE id_user = $1
 ORDER BY (id_user, id_game);
+
+-- name: ListCatalogueInfoByUser :many
+SELECT id_user, id_game, title, score, status
+FROM CatalogueInfo
+WHERE id_user = $1
+ORDER BY title, id_game;
 
 -- name: UpdateRecord :execrows
 UPDATE Catalogue

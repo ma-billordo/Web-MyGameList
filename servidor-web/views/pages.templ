@@ -1,0 +1,28 @@
+package views
+
+import "MyGameList.com/db/sqlc"
+
+templ LibraryPage(games []db.Library) {
+    @Layout("Juegos") {
+        <h1>Juegos 🎮</h1>
+        @LibraryForm()
+        @LibraryList(games)
+    }
+}
+
+templ UserPage(users []db.UserInfo, order string) {
+    @Layout("Usuarios") {
+        <h1>Usuarios</h1>
+        @UserForm()
+        @UserList(users, order)
+    }
+}
+
+templ CataloguePage(idUser int32, userName string, games []db.Library, records []db.Catalogueinfo) {
+    @Layout("Catálogo de " + userName) {
+        <h1>Catálogo de { userName }</h1>
+        <p><a href="/">← Cambiar de usuario</a></p>
+        @CatalogueForm(idUser, games)
+        @CatalogueList(records)
+    }
+}

@@ -10,26 +10,30 @@ import (
 	"MyGameList.com/views"
 )
 
-func (s *Server) IndexHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	if r.Method != http.MethodGet {
+// LibraryHandler atiende /library: GET muestra la página y POST crea un juego.
+func (s *Server) LibraryHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		s.LibraryPage(w, r)
+	case http.MethodPost:
+		s.CreateGame(w, r)
+	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
 	}
+}
 
+// Carga de la página de juegos
+func (s *Server) LibraryPage(w http.ResponseWriter, r *http.Request) {
 	gameList, err := s.queries.ListGames(r.Context())
 	if err != nil {
 		log.Printf("error al listar los juegos: %v", err)
 		http.Error(w, "error al listar los juegos", http.StatusInternalServerError)
 		return
 	}
-	//si está vacia devuelve nil y el for de templ simplemento no itera
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := views.IndexPage(gameList).Render(r.Context(), w); err != nil {
+
+	if err := views.LibraryPage(gameList).Render(r.Context(), w); err != nil {
 		log.Printf("error al renderizar la página: %v", err)
 		http.Error(w, "error al mostrar la página", http.StatusInternalServerError)
 	}
@@ -37,18 +41,13 @@ func (s *Server) IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 // POST /library - Crea nuevo juego
 func (s *Server) CreateGame(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
 	// Leer campos
 	title := r.FormValue("title")
 	description := r.FormValue("description")
 
 	// Validacion
 	if msg := validateGameData(title, description); msg != "" {
-		writeError(w, r, http.StatusBadRequest, msg)
+		WriteError(w, r, http.StatusBadRequest, msg)
 		return
 	}
 
@@ -59,14 +58,15 @@ func (s *Server) CreateGame(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("error al crear el juego: %v", err)
-		writeError(w, r, http.StatusInternalServerError, "error al crear el juego")
+		WriteError(w, r, http.StatusInternalServerError, "error al crear el juego")
 		return
 	}
 
+	// Mostrar los juegos
 	gameList, err := s.queries.ListGames(r.Context())
 	if err != nil {
 		log.Printf("error al listar los juegos: %v", err)
-		writeError(w, r, http.StatusInternalServerError, "error al listar los juegos")
+		WriteError(w, r, http.StatusInternalServerError, "error al listar los juegos")
 		return
 	}
 	//si está vacia devuelve nil y el for de templ simplemento no itera
@@ -104,11 +104,11 @@ func (s *Server) DeleteGame(w http.ResponseWriter, r *http.Request) {
 	rows, err := s.queries.DeleteGame(r.Context(), id)
 	if err != nil {
 		log.Printf("error al eliminar el juego: %v", err)
-		writeError(w, r, http.StatusInternalServerError, "error al eliminar el juego")
+		WriteError(w, r, http.StatusInternalServerError, "error al eliminar el juego")
 		return
 	}
 	if rows == 0 {
-		writeError(w, r, http.StatusNotFound, "juego no encontrado")
+		WriteError(w, r, http.StatusNotFound, "juego no encontrado")
 		return
 	}
 
@@ -131,15 +131,4 @@ func validateGameData(title string, description string) string {
 		return "la descripción del juego no puede estar vacía"
 	}
 	return ""
-}
-
-// writeError responde con un status de error y el mensaje como fragmento HTML,
-// para que HTMX lo muestre en el contenedor de error que corresponda
-// (#form-error en el formulario, o el de cada tarjeta al borrar).
-func writeError(w http.ResponseWriter, r *http.Request, status int, msg string) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-	if err := views.ErrorMessage(msg).Render(r.Context(), w); err != nil {
-		log.Printf("error al renderizar el mensaje de error: %v", err)
-	}
 }

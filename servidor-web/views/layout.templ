@@ -12,10 +12,32 @@ templ Layout(title string) {
             crossorigin="anonymous"></script>
         <style>
             #library-list:has(article) > .empty-message { display: none; }
+            #user-list:has(tbody tr:not(.empty-message)) .empty-message { display: none; }
+            #catalogue-list:has(article) > .empty-message { display: none; }
+            th.sortable { cursor: pointer; }
+            th.sorted-asc::after { content: " ↑"; }
+            th.sorted-desc::after { content: " ↓"; }
+
+            /* Página de inicio */
+            .bienvenida { text-align: center; margin: 2rem 0; }
+
+            /* Tarjetas */
+            .card-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+            .card-head h4 { margin: 0; }
+            
         </style>
         <title>{ title }</title>
     </head>
-    <body>
+    <body hx-boost:inherited="true">
+        <header class="container">
+            <nav>
+                <ul><li><a href="/">🎮 MyGameList</a></li></ul>
+                <ul>
+                    <li><a href="/library">Juegos</a></li>
+                    <li><a href="/users">Usuarios</a></li>
+                </ul>
+            </nav>
+        </header>
         <main class="container">
             { children... }
         </main>

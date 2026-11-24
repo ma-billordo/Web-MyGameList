@@ -1,0 +1,56 @@
+package views
+
+import (
+    "fmt"
+    "MyGameList.com/db/sqlc"
+)
+
+// nextOrder devuelve el orden opuesto al actual, para el próximo clic en la cabecera.
+func nextOrder(order string) string {
+    if order == "asc" {
+        return "desc"
+    }
+    return "asc"
+}
+
+templ UserList(users []db.UserInfo, order string) {
+    <table id="user-list">
+        <thead>
+            <tr>
+                <th scope="col"
+                    class={ "sortable sorted-" + order }
+                    hx-get={ "/users?sort=name&order=" + nextOrder(order) }
+                    hx-target="#user-list"
+                    hx-swap="outerHTML"
+                    hx-push-url="true">
+                    <button type="button" class="outline secondary">Nombre</button>
+                </th>
+                <th scope="col">Email</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="empty-message">
+                <td colspan="3">Todavía no hay usuarios registrados. ¡Registrate en el formulario y sé el primero!</td>
+            </tr>
+            for _, user := range users {
+                <tr>
+                    <td>{ user.Name }</td>
+                    <td>{ user.Email }</td>
+                    <td>
+                        <button
+                            hx-delete={ fmt.Sprintf("/users/%d", user.IDUser) }
+                            hx-target="closest tr"
+                            hx-swap="outerHTML"
+                            hx-confirm="¿Seguro que querés borrar este usuario? Se borrará su catálogo asociado."
+                            hx-status:4xx="swap:none"
+                            hx-status:5xx="swap:none"
+                            hx-on:htmx:response:error="alert(ctx.text)">
+                            Borrar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

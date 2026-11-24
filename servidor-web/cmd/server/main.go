@@ -45,8 +45,12 @@ func main() {
 	server := handlers.NewServer(queries)
 
 	http.Handle("/", middleware.Logging(http.HandlerFunc(server.IndexHandler)))
-	http.Handle("/library", middleware.Logging(http.HandlerFunc(server.CreateGame)))
+	http.Handle("/library", middleware.Logging(http.HandlerFunc(server.LibraryHandler)))
 	http.Handle("/library/", middleware.Logging(http.HandlerFunc(server.DeleteGame)))
+	http.Handle("/users", middleware.Logging(http.HandlerFunc(server.UsersHandler)))
+	http.Handle("/users/", middleware.Logging(http.HandlerFunc(server.DeleteUser)))
+	http.Handle("/catalogue", middleware.Logging(http.HandlerFunc(server.CataloguePage)))
+	http.Handle("/catalogue/", middleware.Logging(http.HandlerFunc(server.CatalogueHandler)))
 
 	port := ":8080"
 	fmt.Printf("Servidor escuchando en http://localhost%s\n", port)
