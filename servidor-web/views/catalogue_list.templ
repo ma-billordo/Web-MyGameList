@@ -1,0 +1,40 @@
+package views
+
+import (
+    "fmt"
+    "strings"
+    "MyGameList.com/db/sqlc"
+)
+
+func recordErrorID(idUser int32, idGame int32) string {
+    return fmt.Sprintf("record-error-%d-%d", idUser, idGame)
+}
+
+templ CatalogueList(records []db.Catalogueinfo) {
+    <div id="catalogue-list">
+        <p class="empty-message">Este usuario todavía no tiene juegos en su catálogo.</p>
+        for _, r := range records {
+            <article>
+                <div class="card-head">
+                    <h4>{ r.Title }</h4>
+                    if r.Score != nil {
+                        <span>{ strings.Repeat("⭐", int(*r.Score)) }</span>
+                    } else {
+                        <small>Sin puntaje</small>
+                    }
+                </div>
+                <p>Estado: { r.Status }</p>
+                <button
+                    hx-delete={ fmt.Sprintf("/catalogue/%d/%d", r.IDUser, r.IDGame) }
+                    hx-target="closest article"
+                    hx-swap="outerHTML"
+                    hx-confirm="¿Seguro que querés quitar este juego del catálogo?"
+                    hx-status:404={ "target:#" + recordErrorID(r.IDUser, r.IDGame) + " swap:innerHTML" }
+                    hx-status:500={ "target:#" + recordErrorID(r.IDUser, r.IDGame) + " swap:innerHTML" }>
+                    Quitar
+                </button>
+                <div id={ recordErrorID(r.IDUser, r.IDGame) }></div>
+            </article>
+        }
+    </div>
+}
