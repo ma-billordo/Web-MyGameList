@@ -7,6 +7,7 @@ templ UserForm() {
         hx-target="#user-list"
         hx-swap="outerHTML"
         hx-status:400="target:#user-form-error swap:innerHTML"
+        hx-status:409="target:#user-form-error swap:innerHTML"
         hx-status:500="target:#user-form-error swap:innerHTML"
         hx-on:htmx:after:swap="
             if (ctx.response.status < 400) {
