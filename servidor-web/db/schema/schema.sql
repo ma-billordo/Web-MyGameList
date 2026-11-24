@@ -50,6 +50,18 @@ ALTER TABLE Catalogue ADD CONSTRAINT Catalogue_Users
     INITIALLY IMMEDIATE
 ;
 
+-- Views
+-- Vista con los datos públicos de los usuarios (sin password)
+CREATE VIEW user_info AS
+SELECT id_user, name, email
+FROM Users;
+
+-- Vista con los registros del catálogo junto con el título del juego
+CREATE VIEW CatalogueInfo AS
+SELECT c.id_user, c.id_game, l.title, c.score, c.status
+FROM Catalogue c
+JOIN Library l ON l.id_game = c.id_game;
+
 -- Functions
 -- Función que recalcula el promedio y actualiza la tabla Library
 CREATE OR REPLACE FUNCTION update_game_avg_score()
