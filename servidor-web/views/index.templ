@@ -1,19 +1,49 @@
 package views
 
-import "MyGameList.com/db/sqlc"
+import (
+    "fmt"
+    "MyGameList.com/db/sqlc"
+)
 
-templ IndexPage(games []db.Library, users []db.ListUsersRow) {
+templ IndexPage(users []db.UserInfo) {
     @Layout("MyGameList") {
-        <h1>MyGameList 🎮</h1>
+        <section class="bienvenida">
+                <h1>MyGameList 🎮</h1>
+                <h2 class="titulo">¡Bienvenidos!</h2>
+                <p>En esta página podrás llevar un registro de tus juegos favoritos, con su estado y tu puntuación</p>
+        </section>
 
-        <h2>Juegos</h2>
-        @LibraryForm()
-        @LibraryList(games)
+        <p class="acciones">¿Qué querés hacer primero?</p>
+        <article class="acciones">
+            <h3>🕹️ Juegos</h3>
+            <p>Cargá juegos</p>
+            <a href="/library" role="button">Crear juego</a>
+        </article>
 
-        <hr/>
+        <article class="acciones">
+            <h3>👤 Usuarios</h3>
+            <p>Registrate con un usuario</p>
+            <a href="/users" role="button">Crear usuario</a>
+        </article>
 
-        <h2>Usuarios</h2>
-        @UserForm()
-        @UserList(users)
+        <article class="acciones">
+            <h3>⭐ Catálogo</h3>
+            <p>Registrá el estado y puntuacion de un juego</p>
+            
+            if len(users) == 0 {
+                <p>Aún no hay usuarios cargados. <a href="/users">Creá el primero.</a></p>
+            } else {
+                <form action="/catalogue" method="get">
+                    <label for="user">Usuario</label>
+                    <select id="user" name="user" required>
+                        <option value="" disabled selected>Elegí un usuario</option>
+                        for _, u := range users {
+                            <option value={ fmt.Sprint(u.IDUser) }>{ u.Name + " (" + u.Email + ")" }</option>
+                        }
+                    </select>
+                    <button type="submit">Ir al catálogo</button>
+                </form>
+            }
+        </article>
     }
 }
